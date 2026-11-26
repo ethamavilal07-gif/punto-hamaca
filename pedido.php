@@ -4,13 +4,78 @@ require __DIR__ . '/includes/functions.php';
 // Precio sin ceros sobrantes: $99, $1,890, $1,450.50
 function precio_corto(float $n): string { return '$' . number_format($n, fmod($n, 1) == 0 ? 0 : 2); }
 
+// ---- Factura: se suma 16% de IVA al total de la compra ----
+const IVA_FACTURA = 0.16;
+function usos_cfdi(): array {
+    return [
+        'G01' => 'Adquisición de mercancías', 'G02' => 'Devoluciones, descuentos o bonificaciones', 'G03' => 'Gastos en general',
+        'I01' => 'Construcciones', 'I02' => 'Mobiliario y equipo de oficina por inversiones', 'I03' => 'Equipo de transporte',
+        'I04' => 'Equipo de cómputo y accesorios', 'I05' => 'Dados, troqueles, moldes, matrices y herramental', 'I06' => 'Comunicaciones telefónicas',
+        'I07' => 'Comunicaciones satelitales', 'I08' => 'Otra maquinaria y equipo',
+        'D01' => 'Honorarios médicos, dentales y hospitalarios', 'D02' => 'Gastos médicos por incapacidad o discapacidad', 'D03' => 'Gastos funerales',
+        'D04' => 'Donativos', 'D05' => 'Intereses reales por créditos hipotecarios', 'D06' => 'Aportaciones voluntarias al SAR',
+        'D07' => 'Primas por seguros de gastos médicos', 'D08' => 'Gastos de transportación escolar obligatoria', 'D09' => 'Depósitos en cuentas para el ahorro',
+        'D10' => 'Pagos por servicios educativos (colegiaturas)', 'S01' => 'Sin efectos fiscales',
+    ];
+}
+// Devuelve [datos de factura o null, mensaje de error o null]. Si no marcó "Requiero factura", no hay datos ni error.
+function factura_validar(array $in): array {
+    if (empty($in['factura'])) return [null, null];
+    foreach (['fac_rfc', 'fac_razon', 'fac_cp', 'fac_uso', 'fac_correo'] as $k) {
+        if (!mb_check_encoding((string)($in[$k] ?? ''), 'UTF-8')) return [null, 'Hay caracteres no válidos en los datos de factura.'];
+    }
+    $d = [
+        'rfc' => mb_strtoupper(preg_replace('/\s+/', '', (string)($in['fac_rfc'] ?? ''))),
+        'razon' => mb_substr(trim(preg_replace('/\s+/', ' ', (string)($in['fac_razon'] ?? ''))), 0, 150),
+        'cp' => preg_replace('/\D/', '', (string)($in['fac_cp'] ?? '')),
+        'uso' => (string)($in['fac_uso'] ?? ''),
+        'correo' => mb_strtolower(trim((string)($in['fac_correo'] ?? ''))),
+    ];
+    $err = null;
+    if (!preg_match('/^[A-ZÑ&]{3,4}\d{6}[A-Z\d]{3}$/u', $d['rfc'])) $err = 'El RFC no es válido (12 o 13 caracteres, sin espacios).';
+    elseif ($d['razon'] === '') $err = 'Escribe la razón social para la factura.';
+    elseif (!preg_match('/^\d{5}$/', $d['cp'])) $err = 'El código postal de la factura debe tener 5 dígitos.';
+    elseif (!array_key_exists($d['uso'], usos_cfdi())) $err = 'Elige el uso de CFDI.';
+    elseif (mb_strlen($d['correo']) > 120 || !filter_var($d['correo'], FILTER_VALIDATE_EMAIL)) $err = 'El correo de la factura no es válido.';
+    return [$err ? null : $d, $err];
+}
+// Desglose de importes: subtotal de productos, IVA 16% y los dos totales posibles
+function importes(float $subtotal): array {
+    $iva = round($subtotal * IVA_FACTURA, 2);
+    return ['subtotal' => $subtotal, 'iva' => $iva, 'total_sin' => $subtotal, 'total_con' => round($subtotal + $iva, 2)];
+}
+function factura_campos(array $v = []): void {
+    $g = fn($k) => e($v[$k] ?? '');
+    ?>
+    <div class="factura-box">
+      <label class="chk"><input type="checkbox" name="factura" value="1" id="factura-chk" <?= !empty($v['factura']) ? 'checked' : '' ?>>
+        <span>Requiero factura <small class="hint">(se suma 16% de IVA al total de la compra)</small></span></label>
+      <div id="factura-fields" <?= !empty($v['factura']) ? '' : 'hidden' ?>>
+        <div class="two">
+          <label>RFC<input name="fac_rfc" maxlength="13" value="<?= $g('fac_rfc') ?>" placeholder="XAXX010101000" style="text-transform:uppercase" autocomplete="off"></label>
+          <label>Código postal fiscal<input name="fac_cp" maxlength="5" inputmode="numeric" value="<?= $g('fac_cp') ?>" placeholder="48300"></label>
+        </div>
+        <label>Razón social<input name="fac_razon" maxlength="150" value="<?= $g('fac_razon') ?>" placeholder="Nombre o razón social tal como está en tu constancia"></label>
+        <label>Uso de CFDI
+          <select name="fac_uso">
+            <option value="">Elige…</option>
+            <?php foreach (usos_cfdi() as $k => $n): ?><option value="<?= e($k) ?>" <?= ($v['fac_uso'] ?? '') === $k ? 'selected' : '' ?>><?= e($k . ' - ' . $n) ?></option><?php endforeach; ?>
+          </select>
+        </label>
+        <label>Correo electrónico para la factura<input type="email" name="fac_correo" maxlength="120" value="<?= $g('fac_correo') ?>" placeholder="facturas@empresa.com"></label>
+      </div>
+    </div>
+    <?php
+}
+
 // Mensaje de WhatsApp con el formato acordado
-function pedido_mensaje(array $items, float $total, string $nombre, string $celular, array $dir): string {
+function pedido_mensaje(array $items, float $total, string $nombre, string $celular, array $dir, ?array $factura = null): string {
+    $imp = importes($total);
     $lineas = [];
     foreach ($items as $it) {
         $l = $it['qty'] . 'x ' . $it['p']['nombre'] . ($it['color'] !== '' ? ' - ' . $it['color'] : '') . ' (' . precio_corto((float)$it['p']['precio']) . ')';
         if (!empty($it['colg'])) $l .= "
-Colgadera: " . $it['colg']['nombre'];
+Modelo: " . $it['colg']['nombre'];
         $lineas[] = $l;
     }
     $L = [];
@@ -25,9 +90,16 @@ Colgadera: " . $it['colg']['nombre'];
     foreach ($lineas as $i => $x) { $L[] = $x; $L[] = site_url('producto.php?id=' . (int)$items[$i]['p']['id']); }
     $L[] = '';
     $L[] = 'Resumen';
-    $L[] = 'Productos: ' . precio_corto($total);
-    $L[] = 'Envío: Por definir';
-    $L[] = 'Total a pagar: ' . precio_corto($total) . ' + envío';
+    if ($factura) {
+        $L[] = 'Subtotal productos: ' . precio_corto($imp['subtotal']);
+        $L[] = 'IVA (16%): ' . precio_corto($imp['iva']);
+        $L[] = 'Envío: Por definir';
+        $L[] = 'Total a pagar (con factura): ' . precio_corto($imp['total_con']) . ' + envío';
+    } else {
+        $L[] = 'Productos: ' . precio_corto($imp['subtotal']);
+        $L[] = 'Envío: Por definir';
+        $L[] = 'Total a pagar: ' . precio_corto($imp['total_sin']) . ' + envío';
+    }
     $L[] = '';
     $L[] = 'Dirección';
     $L[] = 'Calle: ' . $dir['calle'];
@@ -38,6 +110,15 @@ Colgadera: " . $it['colg']['nombre'];
     $L[] = 'C.P.: ' . $dir['cp'];
     if ($dir['referencias'] !== '') $L[] = 'Referencias: ' . $dir['referencias'];
     if (mb_strtolower(trim($dir['recibe'])) !== mb_strtolower(trim($nombre))) $L[] = 'Recibe: ' . $dir['recibe'];
+    if ($factura) {
+        $L[] = '';
+        $L[] = 'Factura';
+        $L[] = 'RFC: ' . $factura['rfc'];
+        $L[] = 'Razón social: ' . $factura['razon'];
+        $L[] = 'Código postal: ' . $factura['cp'];
+        $L[] = 'Uso de CFDI: ' . $factura['uso'] . ' - ' . usos_cfdi()[$factura['uso']];
+        $L[] = 'Correo: ' . $factura['correo'];
+    }
     return implode("\n", $L);
 }
 
@@ -101,7 +182,7 @@ if (!$items) {
 }
 $u = user();
 $err = '';
-$gv = []; // datos de dirección de visitante, para volver a mostrarlos
+$gv = $_SERVER['REQUEST_METHOD'] === 'POST' ? $_POST : []; // lo escrito, para volver a mostrarlo si hay un error
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_POST['accion'] ?? '';
@@ -135,14 +216,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 $nombre = trim($cu['nombre'] . ' ' . $cu['apellido']) ?: $dir['recibe'];
             } else {
-                $gv = $_POST;
                 [$dir, $e2] = dir_validar($_POST);
                 if ($e2) throw new RuntimeException($e2);
                 $cel = celular_normalizar((string)($_POST['celular'] ?? ''));
                 if (!$cel) throw new RuntimeException('Escribe tu celular a 10 dígitos para que podamos contactarte.');
                 $nombre = $dir['recibe'];
             }
-            $msg = pedido_mensaje($items, (float)$total, $nombre, $cel, $dir);
+            [$fac, $ef] = factura_validar($_POST);
+            if ($ef) throw new RuntimeException($ef);
+            $msg = pedido_mensaje($items, (float)$total, $nombre, $cel, $dir, $fac);
             $_SESSION['pedido_listo'] = ['mensaje' => $msg, 'url' => 'https://wa.me/' . WHATSAPP . '?text=' . rawurlencode($msg)];
             redirect('pedido.php?listo=1');
         }
@@ -188,6 +270,7 @@ page_head('Confirmar pedido', 'cart');
             <label class="cel-field">Tu celular <small class="hint">(10 dígitos; para coordinar tu entrega. Se guarda en tu cuenta)</small>
               <input name="celular" type="tel" inputmode="numeric" maxlength="16" required placeholder="322 123 4567" value="<?= e($_POST['celular'] ?? '') ?>" data-msg="Escribe tu celular a 10 dígitos."></label>
           <?php endif; ?>
+          <?php factura_campos($_POST); ?>
         </form>
         <?php else: ?>
           <p class="hint">Aún no tienes direcciones guardadas. Agrega una para continuar.</p>
@@ -209,6 +292,7 @@ page_head('Confirmar pedido', 'cart');
           <?= csrf_field() ?><input type="hidden" name="accion" value="confirmar"><?= fuente_hidden() ?>
           <?php dir_campos($gv); ?>
           <label>Tu celular <small class="hint">(10 dígitos)</small><input name="celular" type="tel" inputmode="numeric" maxlength="16" required placeholder="322 123 4567" value="<?= e($gv['celular'] ?? '') ?>"></label>
+          <?php factura_campos($gv); ?>
           <p class="hint">Esta dirección solo se usa para este pedido y no se guarda.
             <a href="<?= e(root_url('registro.php')) ?>">Crea una cuenta</a> para guardar tus direcciones y no escribirlas cada vez.</p>
         </form>
@@ -223,12 +307,19 @@ page_head('Confirmar pedido', 'cart');
           <div>
             <b><?= e($it['p']['nombre']) ?></b>
             <div class="hint"><?= $it['color'] !== '' ? e($it['color']) . ' · ' : '' ?><?= $it['qty'] ?> <?= $it['qty'] === 1 ? 'pieza' : 'piezas' ?></div>
-            <?php if (!empty($it['colg'])): ?><div class="hint">Colgadera: <?= e($it['colg']['nombre']) ?></div><?php endif; ?>
+            <?php if (!empty($it['colg'])): ?><div class="hint">Modelo: <?= e($it['colg']['nombre']) ?></div><?php endif; ?>
           </div>
           <div class="co-sub"><?= money($it['p']['precio'] * $it['qty']) ?></div>
         </div>
       <?php endforeach; ?>
-      <p class="sum-row"><span>Total</span><b><?= money($total) ?></b></p>
+      <?php $imp = importes((float)$total); $conFac = !empty($_POST['factura']); ?>
+      <div class="totals" id="totals" data-sub="<?= $imp['subtotal'] ?>" data-iva="<?= $imp['iva'] ?>" data-con="<?= $imp['total_con'] ?>">
+        <p class="sum-row"><span>Subtotal de productos</span><b><?= money($imp['subtotal']) ?></b></p>
+        <p class="sum-row sum-iva"><span>IVA 16% (solo si pides factura)</span><b>+ <?= money($imp['iva']) ?></b></p>
+        <p class="sum-row sum-tot<?= $conFac ? '' : ' on' ?>" id="tot-sin"><span>Total sin factura</span><b><?= money($imp['total_sin']) ?></b></p>
+        <p class="sum-row sum-tot<?= $conFac ? ' on' : '' ?>" id="tot-con"><span>Total con factura (+16%)</span><b><?= money($imp['total_con']) ?></b></p>
+        <p class="hint tot-note" id="tot-note"><?= $conFac ? 'Tu total con factura: ' . money($imp['total_con']) : 'Tu total: ' . money($imp['total_sin']) ?> · más envío</p>
+      </div>
       <p class="hint">Aquí no se cobra nada: el pedido se confirma por WhatsApp con un <b>anticipo del 50%</b>. Entrega gratis en Bahía de Banderas y Puerto Vallarta; envíos nacionales se cotizan. <a href="<?= e(root_url('politicas-compra.php')) ?>">Ver políticas de compra</a></p>
       <?php if (!$u || $dirs): ?>
         <button class="btn accent" form="confirmar-form">Confirmar y pedir por WhatsApp</button>

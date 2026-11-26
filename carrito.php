@@ -42,7 +42,7 @@ page_head('Carrito', 'cart');
         <div class="ci-info">
           <a href="<?= e(root_url('producto.php?id=' . $p['id'])) ?>"><b><?= e($p['nombre']) ?></b></a>
           <?php if ($it['color'] !== ''): ?><div class="hint"><i class="sw-mini" style="background:<?= e($hex) ?>"></i> <?= e($it['color']) ?></div><?php endif; ?>
-          <?php if (!empty($it['colg'])): ?><div class="hint">Colgadera: <?= e($it['colg']['nombre']) ?></div><?php endif; ?>
+          <?php if (!empty($it['colg'])): ?><div class="hint">Modelo: <?= e($it['colg']['nombre']) ?></div><?php endif; ?>
           <div class="hint"><?= money($p['precio']) ?> c/u</div>
         </div>
         <form method="post" class="ci-qty">
@@ -63,7 +63,7 @@ page_head('Carrito', 'cart');
     <aside class="cart-sum">
       <h3>Resumen</h3>
       <p class="sum-row"><span>Total (<?= cart_count() ?> piezas)</span><b><?= money($total) ?></b></p>
-      <p class="hint">Aquí no se cobra nada: el pedido se confirma por WhatsApp con un <b>anticipo del 50%</b>. Entrega a domicilio gratis en Bahía de Banderas y Puerto Vallarta; envíos nacionales se cotizan. <a href="<?= e(root_url('politicas-compra.php')) ?>">Ver políticas de compra</a></p>
+      <p class="hint">Aquí no se cobra nada: el pedido se confirma por WhatsApp con un <b>anticipo del 50%</b>. Entrega a domicilio gratis en Bahía de Banderas y Puerto Vallarta; envíos nacionales se cotizan. Si requieres factura, se suma 16% de IVA (lo eliges al confirmar). <a href="<?= e(root_url('politicas-compra.php')) ?>">Ver políticas de compra</a></p>
       <a class="btn accent" href="<?= e(root_url('pedido.php?origen=carrito')) ?>">Pedir por WhatsApp</a>
       <form method="post" data-confirm="¿Vaciar el carrito?" data-ok="Vaciar carrito"><?= csrf_field() ?><input type="hidden" name="accion" value="vaciar">
         <button class="btn small ghost">Vaciar carrito</button></form>

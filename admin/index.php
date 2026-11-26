@@ -7,8 +7,10 @@ page_head('Panel admin');
 <div class="wrap section">
   <div class="section-head"><h1>Panel de administración</h1>
     <span><?php if (is_super()): ?><a class="btn small ghost" href="<?= e(root_url('admin/usuarios.php')) ?>">Usuarios</a><?php endif; ?>
-    <a class="btn small ghost" href="<?= e(root_url('admin/colgaderas.php')) ?>">Colgaderas</a>
-    <a class="btn small ghost" href="<?= e(root_url('admin/inspiraciones.php')) ?>">Inspiraciones</a>
+    <?php $pendMay = (int)db()->query('SELECT COUNT(*) FROM mayoreo WHERE atendida=0')->fetchColumn(); ?>
+    <a class="btn small ghost" href="<?= e(root_url('admin/mayoreo.php')) ?>">Mayoreo<?= $pendMay ? ' (' . $pendMay . ')' : '' ?></a>
+    <a class="btn small ghost" href="<?= e(root_url('admin/colgaderas.php')) ?>">Modelos</a>
+    <a class="btn small ghost" href="<?= e(root_url('admin/inspiraciones.php')) ?>">Reseñas</a>
     <a class="btn small" href="<?= e(root_url('admin/producto.php')) ?>">+ Agregar producto</a></span></div>
   <div class="table-wrap"><table class="admin">
     <tr><th></th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Colores</th><th></th></tr>

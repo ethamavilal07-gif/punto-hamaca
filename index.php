@@ -18,7 +18,7 @@ page_head('Inicio', 'index.php');
 
 <section class="wrap section">
   <div class="section-head center"><h2>Best Sellers</h2>
-    <div class="head-links"><a href="<?= e(root_url('inspiraciones.php')) ?>">Inspiraciones →</a><a href="<?= e(root_url('tienda.php')) ?>">Ver todo →</a></div></div>
+    <div class="head-links"><a href="<?= e(root_url('inspiraciones.php')) ?>">Reseñas →</a><a href="<?= e(root_url('tienda.php')) ?>">Ver todo →</a></div></div>
   <div class="carousel" id="bestsellers">
     <button type="button" class="car-btn prev" aria-label="Anterior">&#8249;</button>
     <div class="cf-track"><?php foreach ($destacados as $p) echo product_card($p, $favs); ?></div>
@@ -37,8 +37,8 @@ page_head('Inicio', 'index.php');
 <section id="contacto" class="contact"><div class="wrap">
   <h2>Contáctanos</h2>
   <p>Si deseas cotizar uno de nuestros productos o quieres una hamaca especial, comunícate con nosotros para resolver tus dudas o comentarios.</p>
-  <p class="contact-line"><b>WhatsApp</b> <a href="https://wa.me/<?= WHATSAPP ?>" target="_blank" rel="noopener"><?= e(whatsapp_display()) ?></a> · <b>Instagram</b> <a href="https://instagram.com/hamacaspv" target="_blank" rel="noopener">@hamacaspv</a></p>
-  <p class="contact-addr">C. Juárez 189 A, Centro, Puerto Vallarta, Jalisco 48300</p>
+  <p class="contact-line"><b>WhatsApp</b> <a href="https://wa.me/<?= WHATSAPP ?>" target="_blank" rel="noopener"><?= e(whatsapp_display()) ?></a> · <b>Correo</b> <a href="mailto:<?= e(LEGAL_EMAIL) ?>"><?= e(LEGAL_EMAIL) ?></a> · <b>Instagram</b> <a href="https://instagram.com/hamacaspv" target="_blank" rel="noopener">@hamacaspv</a></p>
+  <p class="contact-addr"><?= e(LEGAL_DOMICILIO) ?></p>
   <a class="btn accent" href="https://wa.me/<?= WHATSAPP ?>?text=<?= rawurlencode('Hola, me gustaría cotizar una hamaca.') ?>" target="_blank" rel="noopener">CONTÁCTANOS</a>
 </div></section>
 <?php page_foot();

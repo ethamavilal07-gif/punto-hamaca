@@ -8,7 +8,7 @@ if ($id) {
     $st->execute([$id]);
     $c = $st->fetch() ?: redirect('admin/colgaderas.php');
 }
-$iconos = ['hilo' => 'Hilos rectos', 'telar' => 'Banda de telar', 'macrame' => 'Macramé con nudos', 'borlas' => 'Con borlas'];
+$iconos = ['hilo' => 'Hamaca color crudo', 'telar' => 'Hamaca color beige', 'macrame' => 'Hamaca color camel', 'borlas' => 'Hamaca color gris'];
 $err = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $c['nombre'] = mb_substr(trim($_POST['nombre'] ?? ''), 0, 80);
@@ -27,19 +27,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($id) db()->prepare('UPDATE colgaderas SET nombre=?,descripcion=?,imagen=?,icono=?,activa=?,orden=? WHERE id=?')->execute([...$f, $id]);
         else db()->prepare('INSERT INTO colgaderas (nombre,descripcion,imagen,icono,activa,orden) VALUES (?,?,?,?,?,?)')->execute($f);
         if ($old && $old !== $c['imagen']) @unlink(__DIR__ . '/../uploads/' . basename($old));
-        flash($id ? 'Colgadera actualizada.' : 'Colgadera agregada.');
+        flash($id ? 'Modelo actualizado.' : 'Modelo agregado.');
         redirect('admin/colgaderas.php');
     } catch (RuntimeException $ex) { $err = $ex->getMessage(); }
 }
-page_head($id ? 'Editar colgadera' : 'Nueva colgadera');
+page_head($id ? 'Editar modelo' : 'Nuevo modelo');
 ?>
 <div class="wrap section narrow">
-  <h1><?= $id ? 'Editar colgadera' : 'Agregar colgadera' ?></h1>
+  <h1><?= $id ? 'Editar modelo' : 'Agregar modelo' ?></h1>
   <?php if ($err): ?><p class="error"><?= e($err) ?></p><?php endif; ?>
   <form class="box wide" method="post" enctype="multipart/form-data">
     <?= csrf_field() ?>
-    <label>Nombre<input name="nombre" required maxlength="80" value="<?= e($c['nombre']) ?>" placeholder="Telar"></label>
-    <label>Descripción<textarea name="descripcion" rows="3" maxlength="300" placeholder="Largo, material, cómo se ve…"><?= e($c['descripcion']) ?></textarea></label>
+    <label>Nombre<input name="nombre" required maxlength="80" value="<?= e($c['nombre']) ?>" placeholder="Coco"></label>
+    <label>Descripción<textarea name="descripcion" rows="3" maxlength="300" placeholder="Cómo es este modelo: tejido, detalles, medidas…"><?= e($c['descripcion']) ?></textarea></label>
 
     <label>Foto (JPG, PNG o WEBP · máx. 5 MB)<input type="file" id="imgfile" name="imagen" accept="image/jpeg,image/png,image/webp"></label>
     <?php if ($c['imagen']): ?>
@@ -49,7 +49,7 @@ page_head($id ? 'Editar colgadera' : 'Nueva colgadera');
     <div class="cur" id="preview" hidden><img id="previmg" alt="">
       <div><b>Foto nueva</b><br><button type="button" class="btn small danger" id="clearimg">Quitar esta imagen</button></div></div>
 
-    <label>Ilustración (se usa mientras no haya foto)
+    <label>Ilustración de la hamaca (se usa mientras no haya foto)
       <select name="icono"><?php foreach ($iconos as $k => $n): ?><option value="<?= e($k) ?>" <?= $c['icono'] === $k ? 'selected' : '' ?>><?= e($n) ?></option><?php endforeach; ?></select>
     </label>
     <div class="two">

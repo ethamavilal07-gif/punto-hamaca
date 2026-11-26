@@ -198,7 +198,7 @@ if (hero && header) {
 const sws = document.querySelectorAll('.sw');
 const wa = document.getElementById('wa');
 let color = sws[0]?.dataset.name || '';
-// Colgadera elegida (solo en hamacas): por defecto la primera
+// Modelo elegido (solo en hamacas): por defecto la primera
 const colgBox = document.getElementById('colg-carousel');
 let colg = colgBox ? { id: colgBox.dataset.default, name: colgBox.dataset.defaultName } : null;
 // "Pedir por WhatsApp" lleva primero a elegir la dirección de entrega (pedido.php)
@@ -223,7 +223,7 @@ sws.forEach(b => b.addEventListener('click', () => {
 }));
 updateWa();
 
-// Producto: elegir el tipo de colgadera en el carrusel
+// Producto: elegir el modelo en el carrusel
 document.addEventListener('click', (ev) => {
   const b = ev.target.closest('.pick-colg');
   if (!b) return;
@@ -231,12 +231,12 @@ document.addEventListener('click', (ev) => {
   document.querySelectorAll('.colg-card').forEach((card) => {
     const on = card.dataset.id === colg.id;
     card.classList.toggle('sel', on);
-    card.querySelector('.pick-colg').textContent = on ? '✓ Elegida' : 'Elegir';
+    card.querySelector('.pick-colg').textContent = on ? '✓ Elegido' : 'Elegir';
   });
   const nm = document.getElementById('colgname');
   if (nm) nm.textContent = colg.name;
   updateWa();
-  toast('Colgadera elegida: ' + colg.name);
+  toast('Modelo elegido: ' + colg.name);
 });
 
 // Producto: mostrar 6 colores y un botón para ver todos
@@ -432,3 +432,25 @@ document.addEventListener('click', (ev) => {
   document.body.appendChild(lb);
 });
 
+
+// Pedido: factura (+16% IVA). Muestra los datos fiscales y resalta el total que aplica.
+const fchk = document.getElementById('factura-chk');
+if (fchk) {
+  const fields = document.getElementById('factura-fields');
+  const sin = document.getElementById('tot-sin'), con = document.getElementById('tot-con'), note = document.getElementById('tot-note');
+  const syncFactura = () => {
+    const on = fchk.checked;
+    fields.hidden = !on;
+    fields.querySelectorAll('input,select').forEach(i => { i.required = on; });
+    sin.classList.toggle('on', !on);
+    con.classList.toggle('on', on);
+    note.textContent = (on ? 'Tu total con factura: ' : 'Tu total: ') + (on ? con : sin).querySelector('b').textContent + ' · más envío';
+  };
+  fchk.addEventListener('change', syncFactura);
+  syncFactura();
+}
+
+// Filtros que se aplican al cambiarlos (sin scripts en línea por la CSP)
+document.addEventListener('change', (ev) => {
+  if (ev.target.matches('[data-autosubmit]') && ev.target.form) ev.target.form.submit();
+});

@@ -7,7 +7,7 @@ if (!$p) { http_response_code(404); flash('Producto no encontrado.', 'err'); red
 $cols = colores($p);
 $fav = in_array((int)$p['id'], fav_ids(), true);
 $first = $cols[0] ?? ['nombre' => '', 'hex' => '#c99a2e'];
-$colgs = es_hamaca($p) ? colgaderas_activas() : []; // tipos de colgadera para personalizar la hamaca
+$colgs = es_hamaca($p) ? colgaderas_activas() : []; // modelos para personalizar la hamaca (internamente 'colgaderas')
 
 // Reseñas del producto
 $sr = db()->prepare('SELECT r.*, u.usuario FROM resenas r JOIN usuarios u ON u.id=r.usuario_id WHERE r.producto_id=? ORDER BY r.id DESC LIMIT 100');
@@ -42,8 +42,8 @@ page_head($p['nombre']);
   <div class="p-media" id="pmedia" data-photo="<?= $p['imagen'] ? 1 : 0 ?>"><?= product_media($p, $first['hex']) ?></div>
   <?php if ($colgs): ?>
   <div class="colg-box" id="colgaderas">
-    <h3>Elige tu colgadera</h3>
-    <p class="hint">Desliza y presiona el botón para agregarla a tu hamaca.</p>
+    <h3>Elige tu modelo</h3>
+    <p class="hint">Desliza y presiona el botón para agregarlo a tu hamaca.</p>
     <div class="carousel" id="colg-carousel" data-auto="0" data-size="sm" data-default="<?= (int)$colgs[0]['id'] ?>" data-default-name="<?= e($colgs[0]['nombre']) ?>">
       <button type="button" class="car-btn prev" aria-label="Anterior">&#8249;</button>
       <div class="cf-track">
@@ -53,7 +53,7 @@ page_head($p['nombre']);
             <div class="card-body">
               <h3><?= e($c['nombre']) ?></h3>
               <?php if ($c['descripcion'] !== ''): ?><p class="hint"><?= e($c['descripcion']) ?></p><?php endif; ?>
-              <button type="button" class="btn small pick-colg" data-id="<?= (int)$c['id'] ?>" data-name="<?= e($c['nombre']) ?>"><?= $i === 0 ? '✓ Elegida' : 'Elegir' ?></button>
+              <button type="button" class="btn small pick-colg" data-id="<?= (int)$c['id'] ?>" data-name="<?= e($c['nombre']) ?>"><?= $i === 0 ? '✓ Elegido' : 'Elegir' ?></button>
             </div>
           </article>
         <?php endforeach; ?>
@@ -87,7 +87,7 @@ page_head($p['nombre']);
     <?php endif; ?>
 
     <?php if ($colgs): ?>
-      <p class="colg-line">Colgadera: <b id="colgname"><?= e($colgs[0]['nombre']) ?></b> · <a href="#colgaderas">Cambiar</a></p>
+      <p class="colg-line">Modelo: <b id="colgname"><?= e($colgs[0]['nombre']) ?></b> · <a href="#colgaderas">Cambiar</a></p>
     <?php endif; ?>
 
     <table class="specs">

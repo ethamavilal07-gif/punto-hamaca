@@ -29,14 +29,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             db()->prepare('INSERT INTO inspiraciones (titulo, descripcion, producto_id, imagen) VALUES (?,?,?,?)')->execute($f);
         }
-        flash($id ? 'Inspiración actualizada.' : 'Inspiración agregada.');
+        flash($id ? 'Reseña actualizada.' : 'Reseña agregada.');
         redirect('admin/inspiraciones.php');
     } catch (RuntimeException $ex) { $err = $ex->getMessage(); }
 }
-page_head($id ? 'Editar inspiración' : 'Nueva inspiración');
+page_head($id ? 'Editar reseña' : 'Nueva reseña');
 ?>
 <div class="wrap section narrow">
-  <h1><?= $id ? 'Editar inspiración' : 'Agregar inspiración' ?></h1>
+  <h1><?= $id ? 'Editar reseña' : 'Agregar reseña' ?></h1>
   <?php if ($err): ?><p class="error"><?= e($err) ?></p><?php endif; ?>
   <form class="box wide" method="post" enctype="multipart/form-data">
     <?= csrf_field() ?>

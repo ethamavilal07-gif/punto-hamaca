@@ -24,7 +24,13 @@ page_head('Políticas de compra');
     <li><b>Envíos nacionales</b> (resto de la República Mexicana): se cotizan según tu ubicación.</li>
   </ul>
 
-  <h2>4. Cotiza sin compromiso</h2>
+  <h2>4. Factura</h2>
+  <p>Si necesitas factura, márcalo al confirmar tu pedido y captura tus datos fiscales (RFC, razón social, código postal, uso de CFDI y correo). Al total de la compra se le suma el <b>16% de IVA</b>. En el resumen del pedido verás el subtotal de los productos y el total con y sin factura.</p>
+
+  <h2>5. Compras por mayoreo</h2>
+  <p>Si compras para una empresa, llena el <a href="<?= e(root_url('mayoreo.php')) ?>">formulario de mayoreo</a> y te enviamos una cotización.</p>
+
+  <h2>6. Cotiza sin compromiso</h2>
   <p>¿Quieres un color o una pieza a tu medida? <a href="https://wa.me/<?= WHATSAPP ?>" target="_blank" rel="noopener">Escríbenos</a> y te cotizamos sin compromiso.</p>
 
   <p>Consulta también los <a href="<?= e(root_url('terminos.php')) ?>">Términos y condiciones</a> y el <a href="<?= e(root_url('privacidad.php')) ?>">Aviso de privacidad</a>.</p>

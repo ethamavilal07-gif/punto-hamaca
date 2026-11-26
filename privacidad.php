@@ -20,6 +20,8 @@ $contacto = LEGAL_EMAIL !== '' ? '<a href="mailto:' . e(LEGAL_EMAIL) . '">' . e(
     <tr><td>Correo electrónico</td><td>Al crear tu cuenta</td><td>Identificarte, iniciar sesión y comunicarnos contigo sobre tu cuenta</td></tr>
     <tr><td>Contraseña (guardada de forma cifrada, nunca en texto legible)</td><td>Al crear tu cuenta</td><td>Proteger el acceso a tu cuenta</td></tr>
     <tr><td>Reseñas: calificación, comentario (máx. 200 caracteres) y fotos que subas</td><td>Al publicar una reseña</td><td>Mostrar opiniones sobre los productos. <b>Son públicas</b> y se muestran con tu nombre de usuario; puedes eliminarlas cuando quieras</td></tr>
+    <tr><td>Datos de tu empresa y de contacto (formulario de mayoreo)</td><td>Al enviar una solicitud de cotización por mayoreo</td><td>Prepararte y enviarte una cotización</td></tr>
+    <tr><td>Datos de facturación: RFC, razón social, código postal fiscal, uso de CFDI y correo (opcional)</td><td>Solo si pides factura en un pedido</td><td>Incluirlos en el mensaje de WhatsApp de tu pedido para emitir tu factura. No se guardan en el sitio</td></tr>
     <tr><td>Productos marcados como “Me gusta”</td><td>Al usar el sitio con cuenta</td><td>Guardar tu lista de favoritos</td></tr>
     <tr><td>Dirección IP e intentos de inicio de sesión</td><td>Al iniciar sesión</td><td>Seguridad: prevenir accesos no autorizados. Se eliminan automáticamente en un máximo de 24 horas</td></tr>
   </table>

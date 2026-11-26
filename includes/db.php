@@ -136,7 +136,7 @@ function init_schema(PDO $pdo): void {
         creado TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
     )");
-    // Tipos de colgadera que se pueden elegir al personalizar una hamaca
+    // Modelos que se pueden elegir al personalizar una hamaca (internamente 'colgaderas')
     $pdo->exec("CREATE TABLE IF NOT EXISTS colgaderas (
         id INT AUTO_INCREMENT PRIMARY KEY,
         nombre VARCHAR(80) NOT NULL,
@@ -148,15 +148,34 @@ function init_schema(PDO $pdo): void {
         creado TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )");
     if (!(int)$pdo->query('SELECT COUNT(*) FROM colgaderas')->fetchColumn()) {
-        // Las dos primeras vienen de las medidas oficiales; las otras son ejemplos para editar en el panel
+        // Ejemplos para reemplazar desde el panel (Panel admin → Modelos)
         $st = $pdo->prepare('INSERT INTO colgaderas (nombre,descripcion,icono,orden) VALUES (?,?,?,?)');
         foreach ([
-            ['Hilo de algodón', 'Colgadera estándar de 80 cm por lado, en hilo de algodón de 3 mm.', 'hilo', 1],
-            ['Telar', 'Colgadera de 80 cm por lado tejida en telar.', 'telar', 2],
-            ['Macramé', 'Colgadera con nudos de macramé, de 80 cm por lado.', 'macrame', 3],
-            ['Con borlas', 'Colgadera de 80 cm por lado terminada con borlas.', 'borlas', 4],
+            ['Modelo 1', '', 'hilo', 1],
+            ['Modelo 2', '', 'telar', 2],
+            ['Modelo 3', '', 'macrame', 3],
+            ['Modelo 4', '', 'borlas', 4],
         ] as $r) $st->execute($r);
     }
+    // Solicitudes de cotización por mayoreo (empresas)
+    $pdo->exec("CREATE TABLE IF NOT EXISTS mayoreo (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        empresa VARCHAR(150) NOT NULL,
+        giro VARCHAR(80) NOT NULL,
+        contacto VARCHAR(100) NOT NULL,
+        puesto VARCHAR(80) NOT NULL DEFAULT '',
+        correo VARCHAR(120) NOT NULL,
+        celular VARCHAR(10) NOT NULL,
+        rfc VARCHAR(13) NOT NULL DEFAULT '',
+        ciudad VARCHAR(100) NOT NULL,
+        estado VARCHAR(60) NOT NULL,
+        interes VARCHAR(255) NOT NULL,
+        cantidad VARCHAR(40) NOT NULL,
+        fecha DATE NULL,
+        comentarios TEXT NULL,
+        atendida TINYINT(1) NOT NULL DEFAULT 0,
+        creado TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )");
     // Número exterior/interior separado de la calle (las direcciones anteriores lo tenían junto a la calle)
     if (!$pdo->query("SHOW COLUMNS FROM direcciones LIKE 'numero'")->fetch()) {
         $pdo->exec("ALTER TABLE direcciones ADD COLUMN numero VARCHAR(30) NOT NULL DEFAULT '' AFTER calle");

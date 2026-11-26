@@ -393,3 +393,42 @@ legend{font-weight:700;padding:0 6px}
 .colg-card .btn{padding:6px 10px;font-size:.78rem}
 .colg-box .car-btn{width:32px;height:32px;font-size:1.2rem;top:38%}
 .colg-box .car-btn.prev{left:2px}.colg-box .car-btn.next{right:2px}
+
+/* ---- Factura y totales del pedido ---- */
+.factura-box{border-top:1px dashed var(--tan);padding-top:14px;margin-top:6px}
+.factura-box>.chk{margin-bottom:8px}
+#factura-fields{display:grid;gap:10px;background:var(--tan-soft);border-radius:12px;padding:14px}
+#factura-fields[hidden]{display:none}
+#factura-fields label{margin:0}
+.totals{display:grid;gap:6px;margin:8px 0 4px}
+.totals .sum-row{margin:0;font-size:.98rem}
+.totals .sum-iva{color:var(--muted);font-size:.9rem}
+.totals .sum-tot{padding:6px 8px;border-radius:8px;color:var(--muted)}
+.totals .sum-tot.on{background:var(--leaf-soft);color:var(--ink);font-weight:700;font-size:1.05rem}
+.totals .tot-note{margin:2px 0 0;text-align:right}
+
+/* ---- Catálogo: filtro En stock y enlace de mayoreo ---- */
+.stock-filter{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;border-radius:10px;padding:0 14px;cursor:pointer;font-size:.95rem;white-space:nowrap}
+.stock-filter input{width:auto;accent-color:var(--accent)}
+.stock-filter small{color:var(--muted)}
+.stock-filter.on{border-color:var(--leaf-d);background:var(--leaf-soft);font-weight:600}
+.badge-stock{font-style:normal;font-size:.62rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:var(--leaf-soft);color:var(--leaf-d);padding:2px 7px;border-radius:99px;margin-left:4px;vertical-align:middle}
+.mayoreo-cta{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;margin-top:40px;padding:26px 28px;border-radius:var(--r);background:var(--tan-soft);border:1px solid var(--line)}
+.mayoreo-cta h2{font-size:1.35rem;margin:0 0 6px}
+.mayoreo-cta p{margin:0;color:var(--muted)}
+@media(max-width:600px){.stock-filter{flex:1 1 45%;justify-content:center;padding:9px 10px}.mayoreo-cta{padding:20px 18px}.mayoreo-cta .btn{width:100%;text-align:center}}
+
+/* ---- Mayoreo ---- */
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.chk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px 14px;margin-top:4px}
+.chk-grid .chk{font-weight:400}
+.addr-fs{border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:12px}
+.addr-fs legend{font-weight:700;padding:0 6px}
+.may-item{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin-bottom:12px}
+.may-item.done{opacity:.7}
+.may-head{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:flex-start}
+.may-dl{display:grid;grid-template-columns:140px 1fr;gap:4px 14px;margin:12px 0 0}
+.may-dl dt{color:var(--muted);font-weight:600;font-size:.9rem}.may-dl dd{margin:0;overflow-wrap:anywhere}
+@media(max-width:600px){.may-dl{grid-template-columns:1fr}.may-dl dt{margin-top:6px}}
+.filters .stock-filter{flex:0 0 auto}
+.filters .stock-filter input{flex:none;min-width:0;width:18px;height:18px;padding:0;margin:0}

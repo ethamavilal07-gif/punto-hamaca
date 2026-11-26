@@ -13,16 +13,16 @@ if ($i['producto_id']) {
 }
 $fav = $p ? in_array((int)$p['id'], fav_ids(), true) : false;
 
-page_head($i['titulo'] ?: 'Inspiración', 'inspiraciones.php');
+page_head($i['titulo'] ?: 'Reseña', 'inspiraciones.php');
 ?>
-<div class="insp-photo" role="img" aria-label="<?= e($i['titulo'] ?: 'Inspiración Punto Hamaca') ?>" style="background-image:url('<?= e(insp_url($i['imagen'])) ?>')"></div>
+<div class="insp-photo" role="img" aria-label="<?= e($i['titulo'] ?: 'Reseña Punto Hamaca') ?>" style="background-image:url('<?= e(insp_url($i['imagen'])) ?>')"></div>
 
 <div class="wrap section">
-  <p><a href="<?= e(root_url('inspiraciones.php')) ?>">← Más inspiraciones</a></p>
+  <p><a href="<?= e(root_url('inspiraciones.php')) ?>">← Más reseñas</a></p>
   <div class="<?= $p ? 'insp-detail' : '' ?>">
     <div class="insp-text">
       <?php if ($i['titulo'] !== ''): ?><h1><?= e($i['titulo']) ?></h1><?php endif; ?>
-      <h2>Sobre esta inspiración</h2>
+      <h2>Sobre esta reseña</h2>
       <?php if (trim((string)$i['descripcion']) !== ''): ?>
         <p><?= nl2br(e($i['descripcion'])) ?></p>
       <?php else: ?>

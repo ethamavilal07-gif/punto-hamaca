@@ -24,7 +24,7 @@ require_once __DIR__ . '/db.php';
 const SITE_NAME = 'Punto Hamaca';
 // Número de WhatsApp del negocio: es el ÚNICO lugar donde hay que cambiarlo.
 // Formato: código de país + número, solo dígitos y sin "+" (México: 52 + 10 dígitos; WhatsApp suele usar 521 + 10 dígitos).
-const WHATSAPP = '5213222747001';
+const WHATSAPP = '5213221567531';
 // Dirección completa del sitio tal como la abrió la persona (ej. https://www.tudominio.mx/Punto-hamaca/).
 // Se usa para los enlaces que viajan en el mensaje de WhatsApp.
 function site_url(string $ruta = ''): string {
@@ -41,8 +41,8 @@ function whatsapp_display(): string {
 }
 // Datos legales: completa estos valores antes de publicar la página
 const LEGAL_TITULAR = 'Punto Hamaca';
-const LEGAL_DOMICILIO = 'C. Juárez 189 A, Centro, Puerto Vallarta, Jalisco, C.P. 48300';
-const LEGAL_EMAIL = '';            // correo para solicitudes de privacidad (ej. privacidad@tudominio.mx)
+const LEGAL_DOMICILIO = 'Valle de Bravo 262, Valle Dorado, C.P. 63735';
+const LEGAL_EMAIL = 'puntohamaca@gmail.com'; // correo de contacto y de solicitudes de privacidad
 const LEGAL_ACTUALIZADO = '18 de noviembre de 2026';
 
 function e($s): string { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
@@ -216,41 +216,22 @@ function delete_review_files(string $where, array $args): void {
     foreach ($st->fetchAll(PDO::FETCH_COLUMN) as $a) @unlink(__DIR__ . '/../uploads/' . basename($a));
 }
 
-// ---- Colgaderas (solo para hamacas) ----
+// ---- Modelos de hamaca (internamente "colgaderas"; solo para hamacas) ----
 function es_hamaca(array $p): bool { return ($p['categoria'] ?? '') === 'Hamacas'; }
 function colgaderas_activas(): array {
     return db()->query('SELECT * FROM colgaderas WHERE activa=1 ORDER BY orden, id')->fetchAll();
 }
-// Devuelve la colgadera activa con ese id (solo si el producto es hamaca) o null
+// Devuelve el modelo activo con ese id (solo si el producto es hamaca) o null
 function colgadera_por_id(int $id, array $p): ?array {
     if ($id <= 0 || !es_hamaca($p)) return null;
     $st = db()->prepare('SELECT * FROM colgaderas WHERE id=? AND activa=1');
     $st->execute([$id]);
     return $st->fetch() ?: null;
 }
-// Ilustración cuando la colgadera no tiene foto
+// Ilustración del modelo mientras no tenga foto: una hamaca del color elegido
 function colgadera_svg(string $icono = 'hilo'): string {
-    $c = '#8a6a4a';
-    $base = '<svg class="hsvg" viewBox="0 0 200 200" aria-hidden="true"><rect x="40" y="26" width="120" height="8" rx="4" fill="#5b4a38"/>';
-    switch ($icono) {
-        case 'telar':
-            $b = '<path d="M70 34 V160 M130 34 V160" stroke="' . $c . '" stroke-width="22" stroke-linecap="butt" opacity=".9"/>'
-               . '<path d="M59 50 H81 M59 66 H81 M59 82 H81 M59 98 H81 M59 114 H81 M59 130 H81 M59 146 H81 M119 50 H141 M119 66 H141 M119 82 H141 M119 98 H141 M119 114 H141 M119 130 H141 M119 146 H141" stroke="#e8dcc4" stroke-width="3"/>';
-            break;
-        case 'macrame':
-            $b = '<path d="M70 34 V164 M130 34 V164" stroke="' . $c . '" stroke-width="8" stroke-linecap="round"/>'
-               . '<path d="M70 52 L100 76 L130 52 M70 84 L100 108 L130 84 M70 116 L100 140 L130 116" stroke="' . $c . '" stroke-width="5" fill="none" stroke-linecap="round"/>'
-               . '<circle cx="100" cy="76" r="6" fill="#e8dcc4" stroke="' . $c . '" stroke-width="3"/><circle cx="100" cy="108" r="6" fill="#e8dcc4" stroke="' . $c . '" stroke-width="3"/><circle cx="100" cy="140" r="6" fill="#e8dcc4" stroke="' . $c . '" stroke-width="3"/>';
-            break;
-        case 'borlas':
-            $b = '<path d="M70 34 V140 M130 34 V140" stroke="' . $c . '" stroke-width="8" stroke-linecap="round"/>'
-               . '<path d="M70 140 l-12 36 M70 140 l0 40 M70 140 l12 36 M130 140 l-12 36 M130 140 l0 40 M130 140 l12 36" stroke="' . $c . '" stroke-width="5" stroke-linecap="round"/>'
-               . '<circle cx="70" cy="140" r="9" fill="#e8dcc4" stroke="' . $c . '" stroke-width="3"/><circle cx="130" cy="140" r="9" fill="#e8dcc4" stroke="' . $c . '" stroke-width="3"/>';
-            break;
-        default: // hilo
-            $b = '<path d="M62 34 V164 M70 34 V164 M78 34 V164 M122 34 V164 M130 34 V164 M138 34 V164" stroke="' . $c . '" stroke-width="5" stroke-linecap="round"/>';
-    }
-    return $base . $b . '</svg>';
+    $colores = ['hilo' => '#e8dcc4', 'telar' => '#c9c3b6', 'macrame' => '#c39d8c', 'borlas' => '#7b7f86'];
+    return hamaca_svg($colores[$icono] ?? '#e8dcc4');
 }
 function colgadera_media(array $c): string {
     if (!empty($c['imagen'])) return '<img src="' . e(root_url('uploads/' . $c['imagen'])) . '" alt="' . e($c['nombre']) . '">';
@@ -344,7 +325,7 @@ function product_card(array $p, array $favs): string {
     $url = e(root_url('producto.php?id=' . $p['id']));
     $out = '<article class="card"><div class="card-media"><a href="' . $url . '">' . product_media($p) . '</a>'
         . '<button class="heart' . ($fav ? ' on' : '') . '" data-id="' . (int)$p['id'] . '" aria-label="Me gusta" title="Guardar en Me gusta">&#10084;</button></div>'
-        . '<div class="card-body"><span class="tag">' . e($p['categoria']) . '</span>'
+        . '<div class="card-body"><span class="tag">' . e($p['categoria']) . '</span>' . (($p['disponibilidad'] ?? '') === 'stock' ? ' <em class="badge-stock">En stock</em>' : '')
         . '<h3><a href="' . $url . '">' . e($p['nombre']) . '</a></h3><div class="dots">';
     $cols = colores($p);
     foreach (array_slice($cols, 0, 5) as $col) { // máximo 5 colores en la tarjeta
@@ -376,7 +357,7 @@ function upload_image(array $f): ?string {
 function page_head(string $title, string $active = ''): void {
     $u = user();
     $f = flash();
-    $nav = ['index.php' => 'Inicio', 'tienda.php' => 'Catálogo', 'inspiraciones.php' => 'Inspiraciones', 'index.php#nosotros' => 'Nosotros'];
+    $nav = ['index.php' => 'Inicio', 'tienda.php' => 'Catálogo', 'inspiraciones.php' => 'Reseñas', 'index.php#nosotros' => 'Nosotros'];
     $nFav = count(fav_ids());
     $nCart = cart_count();
     ?><!doctype html>
@@ -425,8 +406,8 @@ function page_head(string $title, string $active = ''): void {
 function page_foot(): void { ?></main>
 <footer class="site-footer"><div class="wrap cols">
   <div><h4>Punto Hamaca</h4><p>Somos fabricantes. Calidad y precios accesibles.</p></div>
-  <div><h4>Visítanos</h4><p>C. Juárez 189 A, Centro,<br>Puerto Vallarta, Jalisco 48300</p></div>
-  <div><h4>Contacto</h4><p><a href="https://wa.me/<?= WHATSAPP ?>" target="_blank" rel="noopener">WhatsApp</a><br><a href="https://instagram.com/hamacaspv" target="_blank" rel="noopener">@hamacaspv</a></p></div>
+  <div><h4>Visítanos</h4><p><?= e(LEGAL_DOMICILIO) ?></p></div>
+  <div><h4>Contacto</h4><p><a href="https://wa.me/<?= WHATSAPP ?>" target="_blank" rel="noopener">WhatsApp</a><br><a href="mailto:<?= e(LEGAL_EMAIL) ?>"><?= e(LEGAL_EMAIL) ?></a><br><a href="https://instagram.com/hamacaspv" target="_blank" rel="noopener">@hamacaspv</a></p></div>
 </div><div class="copy">© <?= date('Y') ?> Punto Hamaca ·
   <a href="<?= e(root_url('privacidad.php')) ?>">Aviso de privacidad</a> ·
   <a href="<?= e(root_url('politicas-compra.php')) ?>">Políticas de compra</a> ·
