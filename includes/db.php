@@ -1,9 +1,12 @@
 <?php
-// Conexión MySQL (XAMPP por defecto: root sin contraseña). Crea BD, tablas y datos iniciales.
-const DB_HOST = '127.0.0.1';
-const DB_NAME = 'punto_hamaca';
-const DB_USER = 'root';
-const DB_PASS = '';
+// Conexión MySQL/MariaDB. Crea las tablas y datos iniciales que falten.
+// En un servidor, las credenciales van en includes/config.local.php (no se sube a git; ver config.example.php).
+// Sin ese archivo se usan los valores de XAMPP en tu computadora (root sin contraseña).
+if (is_file(__DIR__ . '/config.local.php')) require __DIR__ . '/config.local.php';
+defined('DB_HOST') || define('DB_HOST', '127.0.0.1');
+defined('DB_NAME') || define('DB_NAME', 'punto_hamaca');
+defined('DB_USER') || define('DB_USER', 'root');
+defined('DB_PASS') || define('DB_PASS', '');
 
 // Colores oficiales del hilo de Punto Hamaca (nombre => hex aproximado de las fotos de muestra).
 // Para ajustar un tono, cambia el hex aquí o edítalo por producto en el panel admin.
@@ -25,9 +28,15 @@ function db(): PDO {
     static $pdo = null;
     if ($pdo) return $pdo;
     $opts = [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC];
-    $boot = new PDO('mysql:host=' . DB_HOST . ';charset=utf8mb4', DB_USER, DB_PASS, $opts);
-    $boot->exec('CREATE DATABASE IF NOT EXISTS ' . DB_NAME . ' CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
-    $pdo = new PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4', DB_USER, DB_PASS, $opts);
+    $dsn = 'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4';
+    try {
+        $pdo = new PDO($dsn, DB_USER, DB_PASS, $opts);
+    } catch (PDOException $e) {
+        if ((int)$e->getCode() !== 1049) throw $e; // 1049 = la base aún no existe: se intenta crear
+        $boot = new PDO('mysql:host=' . DB_HOST . ';charset=utf8mb4', DB_USER, DB_PASS, $opts);
+        $boot->exec('CREATE DATABASE IF NOT EXISTS `' . DB_NAME . '` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
+        $pdo = new PDO($dsn, DB_USER, DB_PASS, $opts);
+    }
     init_schema($pdo);
     return $pdo;
 }

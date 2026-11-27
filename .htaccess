@@ -3,3 +3,6 @@ ServerSignature Off
 <FilesMatch "\.(sql|log|ini|bak|md)$">
   Require all denied
 </FilesMatch>
+
+# El repositorio (.git, .gitignore) no debe verse desde el navegador
+RedirectMatch 404 /\.git

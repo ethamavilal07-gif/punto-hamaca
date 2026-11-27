@@ -1,2 +1,4 @@
 # Respaldo con datos personales: no subir al repositorio
 database/respaldo-*.sql
+# Credenciales del servidor: nunca se suben
+includes/config.local.php
